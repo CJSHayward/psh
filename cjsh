@@ -1,9 +1,723 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
-<title>301 Moved Permanently</title>
-</head><body>
-<h1>Moved Permanently</h1>
-<p>The document has moved <a href="https://cjshayward.com/cjsh/download.cgi">here</a>.</p>
-<hr>
-<address>Apache/2.4.10 (Debian) Server at cjshayward.com Port 80</address>
-</body></html>
+#!/usr/bin/env python3
+#
+# Note: To allow people to play with variables and not have them forgotten,
+# this is implemented, unusually, without defining new objects or functions.
+# This ensures in particular that variable interpolation may occur without
+# state being wiped per whim of the function call.
+#
+# (c) 2012 C.J.S. Hayward, CJSHayward@pobox.com, JonathansCorner.com
+#
+# Available to you under your choice of the terms of the MIT and GPLv2
+# licenses.
+
+import glob
+import readline
+import os
+import re
+import shlex
+import stat
+import subprocess
+import sys
+import threading
+import time
+
+BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
+  'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
+  'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
+
+DEBUG = True
+
+EDITOR = os.getenv('EDITOR')
+
+RUN = 'run'
+
+if not EDITOR:
+    EDITOR = 'vim'
+
+background = {
+    'gimp': True,
+    EDITOR: False,
+    }
+
+handlers = {
+  'c': EDITOR,
+  'conf': EDITOR,
+  'cpp': EDITOR,
+  'css': EDITOR,
+  'deb': 'dpkg -i',
+  'el': EDITOR,
+  'elc': EDITOR,
+  'gif': 'gimp',
+  'h': EDITOR,
+  'htm': EDITOR,
+  'html': EDITOR,
+  'jpeg': 'gimp',
+  'jpg': 'gimp',
+  'pdf': 'google-chrome',
+  'pl': 'google-chrome',
+  'py': EDITOR,
+  'rpm': 'rpm -i',
+  'sh': EDITOR,
+  'tbz2': 'tar xvf',
+  'tar.bz2': 'tar xvf',
+  'tar.lzma': 'tar xzf',
+  'tar.gz': 'tar xzf',
+  'tgz': 'tar xzf',
+  'tlz': 'tar xzf',
+  'txt': EDITOR,
+  'xcf': 'gimp',
+  'zip': 'unzip',
+  }
+
+heirarchy = []
+
+def act_on(filename):
+    if not filename:
+        return None
+    try:
+        handle = open(filename, 'wb')
+        shebang_check = f.read(2)
+        if shebang == bytes([35, 33]):
+            return EDITOR
+    except IOError:
+        pass
+    end = filename.lower().split('.')[-1]
+    if end in handlers:
+        return handlers[end]
+    else:
+        return filename
+
+def is_literal_command(command):
+    if subprocess.getoutput('which ' + command) or command in BASH_BUILTINS:
+        return True
+    else:
+        return False
+        
+
+#trace_handle = open('/tmp/cjsh_trace.' + str(os.getpid()), 'w')
+trace_handle = open('/tmp/cjsh_trace.out', 'w')
+
+def log(message):
+    if type(message) == type(''):
+        sys.stderr.write(message + '\n')
+    else:
+        sys.stderr.write(repr(message) + '\n')
+    sys.stderr.flush()
+
+def trace(identifier):
+    if DEBUG:
+        trace_handle.write(str(identifier) + '\n')
+        trace_handle.flush()
+
+def repr_log(repr_object):
+    trace(repr(repr_object))
+
+rlog = repr_log
+
+username = subprocess.getoutput('whoami')
+if username.endswith('\n'):
+    username = username[:-1]
+hostname = subprocess.getoutput('hostname -f')
+if hostname.endswith('\n'):
+    hostname = hostname[:-1]
+
+def wrap(argument):
+    return "'" + argument.replace("'", "'\\''") + "'"
+
+try:
+    readline.read_history_file(os.path.join(os.getenv('HOME'), '.cjsh_history'))
+except IOError:
+    pass
+
+class StoppableThread(threading.Thread):
+    def __init__(self):
+        super(StoppableThread, self).__init__()
+        self._stop_event = threading.Event()
+    def run(self):
+        for root, directories, files in os.walk('/'):
+            if self.stopped():
+                return
+            if root == '/' and 'Volumes' in directories:
+                directories.remove('Volumes')
+            if root == '/' and 'cygdrive' in directories:
+                directories.remove('cygdrive')
+            for file in files:
+                heirarchy.append(os.path.join(root, file))
+        open(os.path.join(os.getenv('HOME'), '.cjsh_file_listing_' +
+            str(os.getpid())), 'w').write('\n'.join(heirarchy) + '\n')
+        os.rename(os.path.join(os.getenv('HOME'), '.cjsh_file_listing_' +
+            str(os.getpid())), os.path.join(os.getenv('HOME'),
+            '.cjsh_file_listing'))
+        if '' in heirarchy:
+            heirarchy.remove('')
+    def stop(self):
+        self._stop_event.set()
+    def stopped(self):
+        return self._stop_event.is_set()
+
+#thread = Thread()
+#thread.start()
+
+trace(1)
+if True:
+#try:
+    trace(2)
+    if os.path.exists(os.path.join(os.getenv('HOME'), '.cjshrc')):
+        lines = open(os.path.join(os.getenv('HOME'),
+          '.cjshrc')).read().split('\n')
+    else:
+        lines = []
+    for line in lines:
+        trace(3)
+        if line:
+            trace(4)
+            if line[0] == '\t':
+                trace(5)
+                lines.append(line)
+            else:
+                trace(6)
+                indented = 0
+                starting = True
+                if lines:
+                    trace(7)
+                    for character in lines[-1]:
+                        trace(8)
+                        if starting and character == '\t':
+                            trace(9)
+                            indented += 1
+                        if character != '\t':
+                            trace(10)
+                            starting = False
+                    if lines[-1][-1] == ':':
+                        trace(11)
+                        indented += 1
+                split_line = shlex.split(line, True)
+                trace(12)
+                if is_literal_command(line[0]):
+                    trace(13)
+                    command = line
+                else:
+                    trace(14)
+                    globbed_line = []
+                    globbed_line.append(split_line[0])
+                    for entry in split_line[1:]:
+                        trace(15)
+                        if glob.glob(entry):
+                            trace(16)
+                            globbed_line += glob.glob(entry)
+                        else:
+                            trace(17)
+                            globbed_line.append(entry)
+                    searched_line = []
+                    searched_line.append(globbed_line[0])
+                    for entry in globbed_line[1:]:
+                        trace(18)
+                        if entry[0] == '-':
+                            trace(19)
+                            searched_line.append(entry)
+                        elif '/' in entry:
+                            trace(20)
+                            searched_line.append(entry)
+                        else:
+                            trace(21)
+                            if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                                trace(22)
+                                searched_line.append(entry)
+                            else:
+                                trace(23)
+                                found_in_local_heirarchy = False
+                                found_in_home_heirarchy = False
+                                for filename in heirarchy:
+                                    trace(24)
+                                    if filename.startswith(os.getenv('PWD')):
+                                        trace(25)
+                                        if filename.endswith('/' + entry):
+                                            trace(26)
+                                            searched_line.append(filename)
+                                            found_in_local_heirarchy = True
+                                if os.getenv('PWD') != os.getenv('HOME'):
+                                    trace(27)
+                                    if not found_in_local_heirarchy:
+                                        trace(28)
+                                        if filename.startswith(os.getenv('HOME')):
+                                            trace(28)
+                                            if filename.endswith('/' + entry):
+                                                trace(29)
+                                                searched_line.append(filename)
+                                                found_in_home_heirarchy = True
+                                if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                                    trace(30)
+                                    for filename in heirarchy:
+                                        trace(31)
+                                        if filename.endswith('/' + entry):
+                                            trace(32)
+                                            searched_line.append(filename)
+                    command = ' '.join(searched_line)
+                lines.append(('\t' * indented) + 'os.system("' +
+                    command + '")')
+        elif lines:
+            trace(33)
+            to_exec = ''
+            for line in lines:
+                trace(34)
+                to_exec += line[1:] + '\n'
+            to_exec = re.sub('%\((\w+)\)\w', r'" + str(\1) + "', to_exec)
+            try:
+                trace(35)
+                exec(to_exec, globals(), locals())
+                line = ''
+            except Exception as error:
+                trace(36)
+                print(to_exec)
+                print("There was an error: {0}".format(error))
+            readline.write_history_file(os.path.join(os.getenv('HOME'), 
+                '.cjsh_history'))
+
+#except IOError:
+    #trace(37)
+    #pass
+if len(sys.argv) > 1:
+    trace(38)
+    lines = open(sys.argv[1]).read().split('\n')
+    for line in lines:
+        trace(39)
+        if line:
+            trace(40)
+            if line[0] == '\t':
+                trace(41)
+                lines.append(line)
+            else:
+                trace(42)
+                indented = 0
+                starting = True
+                if lines:
+                    trace(43)
+                    for character in lines[-1]:
+                        trace(44)
+                        if starting and character == '\t':
+                            trace(45)
+                            indented += 1
+                        if character != '\t':
+                            trace(46)
+                            starting = False
+                    if lines[-1][-1] == ':':
+                        trace(47)
+                        indented += 1
+                split_line = shlex.split(line, True)
+                if is_literal_command(split_line[0]):
+                    trace(48)
+                    command = line
+                else:
+                    trace(49)
+                    globbed_line = []
+                    globbed_line.append(split_line[0])
+                    for entry in split_line[1:]:
+                        trace(50)
+                        if glob.glob(entry):
+                            trace(51)
+                            globbed_line += glob.glob(entry)
+                        else:
+                            trace(52)
+                            globbed_line.append(entry)
+                    searched_line = []
+                    searched_line.append(globbed_line[0])
+                    for entry in globbed_line[1:]:
+                        trace(53)
+                        if entry[0] == '-':
+                            trace(54)
+                            searched_line.append(entry)
+                        elif '/' in entry:
+                            trace(55)
+                            searched_line.append(entry)
+                        else:
+                            trace(56)
+                            if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                                trace(57)
+                                searched_line.append(entry)
+                            else:
+                                trace(58)
+                                found_in_local_heirarchy = False
+                                found_in_home_heirarchy = False
+                                for filename in heirarchy:
+                                    trace(59)
+                                    if filename.startswith(os.getenv('PWD')):
+                                        trace(60)
+                                        if filename.endswith('/' + entry):
+                                            trace(61)
+                                            searched_line.append(filename)
+                                            found_in_local_heirarchy = True
+                                if os.getenv('PWD') != os.getenv('HOME'):
+                                    trace(62)
+                                    if not found_in_local_heirarchy:
+                                        trace(63)
+                                        if filename.startswith(os.getenv('HOME')):
+                                            trace(64)
+                                            if filename.endswith('/' + entry):
+                                                trace(65)
+                                                searched_line.append(filename)
+                                                found_in_home_heirarchy = True
+                                if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                                    trace(66)
+                                    for filename in heirarchy:
+                                        trace(67)
+                                        if filename.endswith('/' + entry):
+                                            trace(68)
+                                            searched_line.append(filename)
+                    command = ' '.join(searched_line)
+                lines.append(('\t' * indented) + 'os.system("' +
+                    command + '")')
+        elif lines:
+            trace(69)
+            to_exec = ''
+            for line in lines:
+                trace(70)
+                to_exec += line[1:] + '\n'
+            to_exec = re.sub('%\((\w+)\)\w', r'" + str(\1) + "', to_exec)
+            try:
+                trace(71)
+                exec(to_exec, globals(), locals())
+                line = ''
+            except Exception as error:
+                trace(72)
+                print(to_exec)
+                print("There was an error: {0}".format(error))
+
+
+if not ('-s' in sys.argv or '--silent' in sys.argv):
+    print(
+        "Welcome to cjsh. Please visit CJSHayward.com! Hit '?' for help.")
+    print('--')
+while True:
+    print(username + ' @ ' + hostname + ' - ' +
+        time.asctime(time.localtime(time.time())))
+    print(os.getcwd())
+    try:
+        trace(73)
+        sys.stdout.write('cjsh> ')
+        sys.stdout.flush()
+        line = sys.stdin.readline()
+        log(shlex.split(line))
+        if not line:
+            print('\nBye!')
+            sys.exit(0)
+        print('')
+    except EOFError:
+        trace(74)
+        print('')
+        sys.exit(0)
+    line = line[:-1]
+    if line and line[0] == ' ':
+        trace(75)
+        line = line.replace('    ', '\t')
+    if line == '?':
+        trace(76)
+        print('''
+cjsh is an experimental Python-powered Linux/Unix/Mac shell by C.J.S. Hayward.
+It is designed to allow commands such as editors to find appropriate files that
+don't happen to be in your current directory, to allow tab completion for ssh
+and sftp as much as vi and emacs, and to allow a powerful Python variant for
+shell scripting.
+
+As a minor feature, it imitates the most famous Python Easter egg.
+''')
+    elif line == "import this":
+        trace(77)
+        os.system('''echo "
+The un-Zen of cjsh by C.J.S. Hayward, CJSHayward@pobox.com, CJSHayward.com:
+
+You can mix Python with system shell commands: no indent for the latter.
+Leave a blank line after pure or mixed Python to execute.
+    If you're a Pythonista, try it.
+
+cjsh will look for files:
+    First in your present directory,
+    Then in your present file heirarchy,
+    Then in your home directory heirarchy,
+    Then across the filesystem as recorded.
+
+Control-R is for command completion that reaches across far more than your
+current directory.
+
+Tabs are for Python.
+
+cjsh> [TAB]for index in range(10):
+----> echo %(index)d
+----> 
+
+Prepend a tab to a line to enter a command Python-mode.
+    '^\\t' == '^    '
+
+cjsh is a second take on Unix files and shells after modern searching and
+usability.
+
+(But it's only a first pass.)
+
+**Use the Source, Luke!**
+" | less''')
+    elif line.startswith('cd '):
+        trace(78)
+        output = subprocess.getoutput(line + ' && pwd')
+        if output.startswith('/'):
+            trace(79)
+            os.chdir(output)
+        else:
+            trace(80)
+            sys.stderr.write(output)
+    elif line.strip() in ['exit', 'logout']:
+        trace(81)
+        print('')
+        sys.exit(0)
+    elif line and line[0] == '\t':
+        trace(82)
+        lines = [line]
+        while line != '':
+            trace(83)
+            try:
+                trace(84)
+                line = input('----> ')
+            except EOFError:
+                trace(85)
+                print('')
+                sys.exit(0)
+            if line:
+                trace(86)
+                if line[0] == '\t':
+                    trace(87)
+                    lines.append(line)
+                else:
+                    trace(88)
+                    indented = 0
+                    starting = True
+                    if lines:
+                        trace(89)
+                        for character in lines[-1]:
+                            trace(90)
+                            if starting and character == '\t':
+                                trace(91)
+                                indented += 1
+                            if character != '\t':
+                                trace(92)
+                                starting = False
+                        if lines[-1][-1] == ':':
+                            indented += 1
+                            trace(93)
+                    split_line = shlex.split(line, True)
+                    if is_literal_command(split_line[0]):
+                        trace(94)
+                        command = line
+                    else:
+                        trace(95)
+                        globbed_line = []
+                        globbed_line.append(split_line[0])
+                        for entry in split_line[1:]:
+                            trace(96)
+                            if glob.glob(entry):
+                                trace(97)
+                                globbed_line += glob.glob(entry)
+                            else:
+                                trace(98)
+                                globbed_line.append(entry)
+                        searched_line = []
+                        searched_line.append(globbed_line[0])
+                        for entry in globbed_line[1:]:
+                            trace(99)
+                            if entry[0] == '-':
+                                trace(100)
+                                searched_line.append(entry)
+                            elif '/' in entry:
+                                trace(101)
+                                searched_line.append(entry)
+                            else:
+                                trace(102)
+                                if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                                    trace(103)
+                                    searched_line.append(entry)
+                                else:
+                                    trace(104)
+                                    found_in_local_heirarchy = False
+                                    found_in_home_heirarchy = False
+                                    for filename in heirarchy:
+                                        trace(105)
+                                        if filename.startswith(os.getenv('PWD')):
+                                            trace(106)
+                                            if filename.endswith('/' + entry):
+                                                trace(107)
+                                                searched_line.append(filename)
+                                                found_in_local_heirarchy = True
+                                    if os.getenv('PWD') != os.getenv('HOME'):
+                                        trace(108)
+                                        if not found_in_local_heirarchy:
+                                            trace(109)
+                                            if filename.startswith(os.getenv('HOME')):
+                                                trace(110)
+                                                if filename.endswith('/' + entry):
+                                                    trace(111)
+                                                    searched_line.append(filename)
+                                                    found_in_home_heirarchy = True
+                                    if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                                        trace(112)
+                                        for filename in heirarchy:
+                                            trace(113)
+                                            if filename.endswith('/' + entry):
+                                                trace(114)
+                                                searched_line.append(filename)
+                        command = ' '.join(searched_line)
+                    lines.append(('\t' * indented) + 'os.system("' +
+                        command + '")')
+            elif lines:
+                trace(115)
+                to_exec = ''
+                for line in lines:
+                    trace(116)
+                    to_exec += line[1:] + '\n'
+                to_exec = re.sub('%\((\w+)\)\w', r'" + str(\1) + "', to_exec)
+                try:
+                    trace(117)
+                    exec(to_exec, globals(), locals())
+                    line = ''
+                except Exception as error:
+                    trace(118)
+                    print(to_exec)
+                    print("There was an error: {0}".format(error))
+                readline.write_history_file(os.path.join(os.getenv('HOME'), 
+                    '.cjsh_history'))
+
+    else:
+        split_line = shlex.split(line, True)
+        trace(119)
+        if not split_line:
+            trace('119B')
+            pass
+        elif len(split_line) == 1:
+            trace(120)
+            if os.path.exists(line):
+                if os.path.isdir(line):
+                    os.chdir(line)
+                else:
+                    os.system(act_on_filename(line))
+            else:
+                os.system(line)
+        else:
+            trace(121)
+            globbed_line = []
+            globbed_line.append(split_line[0])
+            for entry in split_line[1:]:
+                trace(122)
+                if glob.glob(entry):
+                    trace(123)
+                    globbed_line += glob.glob(entry)
+                else:
+                    trace(124)
+                    globbed_line.append(entry)
+            searched_line = []
+            searched_line.append(globbed_line[0])
+            for entry in globbed_line[1:]:
+                trace(125)
+                if entry[0] == '-':
+                    trace(126)
+                    searched_line.append(entry)
+                elif '/' in entry:
+                    trace(127)
+                    searched_line.append(entry)
+                else:
+                    trace(128)
+                    if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                        trace(129)
+                        searched_line.append(entry)
+                    else:
+                        trace(130)
+                        found_in_local_heirarchy = False
+                        found_in_home_heirarchy = False
+                        for filename in heirarchy:
+                            trace(131)
+                            if filename.startswith(os.getenv('PWD')):
+                                trace(132)
+                                if filename.endswith('/' + entry):
+                                    trace(133)
+                                    searched_line.append(filename)
+                                    found_in_local_heirarchy = True
+                        if os.getenv('PWD') != os.getenv('HOME'):
+                            trace(134)
+                            if not found_in_local_heirarchy:
+                                trace(135)
+                                if filename.startswith(os.getenv('HOME')):
+                                    trace(136)
+                                    if filename.endswith('/' + entry):
+                                        trace(137)
+                                        searched_line.append(filename)
+                                        found_in_home_heirarchy = True
+                        if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                            trace(138)
+                            for filename in heirarchy:
+                                trace(139)
+                                if filename.endswith('/' + entry):
+                                    trace(140)
+                                    searched_line.append(filename)
+            line = searched_line
+
+            #if (isinstance(expanded_line, list)):
+                #line = ' '.join(expanded_line)
+            #else:
+                #line = expanded_line
+            #print(line)
+            #parsed_line = shlex.split(line)
+            if len(line) == 1 and os.path.isdir(line[0]):
+                #log(2)
+                trace(141)
+                os.chdir(line[0])
+            else:
+                trace(142)
+                #log(3)
+                if is_literal_command(line[0]):
+                    os.system(' '.join(line))
+                elif (len(line) == 1 and os.path.isfile(line[0]) and
+                  subprocess.getoutput('which ' + line[0]) and
+                  bool(os.stat(subprocess.getoutput('which ' + line[0])) &
+                  stat.S_IXUSR)):
+                    trace(143)
+                    #log(4)
+                    os.system(wrap(line[0]))
+                else:
+                    trace(144)
+                    #log(5)
+                    previous_handler = None
+                    sequence = []
+                    rlog(sys.argv)
+                    for argument in line:
+                        trace(145)
+                        #log(6)
+                        for extension in handlers:
+                            #log(7)
+                            trace(146)
+                            if argument.lower().endswith('.' + extension):
+                                #log(8)
+                                trace(147)
+                                handler = handlers[extension]
+                                if background[handler]:
+                                    trace(148)
+                                    #log(9)
+                                    os.system(handler + ' ' + wrap(argument) +
+                                      ' &')
+                                else:
+                                    trace(149)
+                                    #log(10)
+                                    if handler == previous_handler:
+                                        trace(150)
+                                        #log(11)
+                                        sequence.append(argument)
+                                    else:
+                                        trace(151)
+                                        #log(12)
+                                        os.system(previous_handler + ' ' + 
+                                          ' '.join([wrap(x) for x in sequence]))
+                                        previous_hander = handler
+                                        sequence = [argument]
+                    #log(13)
+                    if sequence:
+                        trace(152)
+                        #log(14)
+                        os.system(previous_handler + ' ' + ' '.join([wrap(x) for x
+                          in sequence]))
+                #log(15)
+            readline.write_history_file(os.path.join(os.getenv('HOME'), 
+                '.cjsh_history'))
