@@ -75,10 +75,10 @@ def act_on(filename):
     if not filename:
         return None
     try:
-        handle = open(filename, 'wb')
-        shebang_check = f.read(2)
+        handle = open(filename, 'rb')
+        shebang = handle.read(2)
         if shebang == bytes([35, 33]):
-            return EDITOR
+            return EDITOR + ' ' + filename
     except IOError:
         pass
     end = filename.lower().split('.')[-1]
@@ -594,7 +594,7 @@ usability.
                 if os.path.isdir(line):
                     os.chdir(line)
                 else:
-                    os.system(act_on_filename(line))
+                    os.system(act_on(line))
             else:
                 os.system(line)
         else:
