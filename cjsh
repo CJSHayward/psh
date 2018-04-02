@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 #
-# Note: To allow people to play with variables and not have them forgotten,
-# this is implemented, unusually, without defining new objects or functions.
-# This ensures in particular that variable interpolation may occur without
-# state being wiped per whim of the function call.
-#
 # (c) 2012 C.J.S. Hayward, CJSHayward@pobox.com, JonathansCorner.com
 #
 # Available to you under your choice of the terms of the MIT and GPLv2
@@ -25,7 +20,7 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
   'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
   'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
 
-DEBUG = True
+DEBUG = False
 
 EDITOR = os.getenv('EDITOR')
 
@@ -98,11 +93,12 @@ def is_literal_command(command):
 trace_handle = open('/tmp/cjsh_trace.out', 'w')
 
 def log(message):
-    if type(message) == type(''):
-        sys.stderr.write(message + '\n')
-    else:
-        sys.stderr.write(repr(message) + '\n')
-    sys.stderr.flush()
+    if DEBUG:
+        if type(message) == type(''):
+            sys.stderr.write(message + '\n')
+        else:
+            sys.stderr.write(repr(message) + '\n')
+        sys.stderr.flush()
 
 def trace(identifier):
     if DEBUG:
@@ -385,9 +381,10 @@ if len(sys.argv) > 1:
 
 if not ('-s' in sys.argv or '--silent' in sys.argv):
     print(
-        "Welcome to cjsh. Please visit CJSHayward.com! Hit '?' for help.")
+      "Welcome to cjsh. Please visit [1mCJSHayward.com[0m! Hit '?' for help.")
     print('--')
 while True:
+    print('')
     print(username + ' @ ' + hostname + ' - ' +
         time.asctime(time.localtime(time.time())))
     print(os.getcwd())
@@ -400,7 +397,6 @@ while True:
         if not line:
             print('\nBye!')
             sys.exit(0)
-        print('')
     except EOFError:
         trace(74)
         print('')
