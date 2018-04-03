@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# (c) 2012 C.J.S. Hayward, CJSHayward@pobox.com, JonathansCorner.com
+# (c) 2012-2018 C.J.S. Hayward, CJSHayward@pobox.com, JonathansCorner.com
 #
 # Available to you under your choice of the terms of the MIT and GPLv2
 # licenses.
@@ -23,8 +23,6 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
 DEBUG = True
 
 EDITOR = os.getenv('EDITOR')
-
-RUN = 'run'
 
 if not EDITOR:
     EDITOR = 'vim'
@@ -133,7 +131,7 @@ handlers = {
   'xlsm': 'libreoffice',
   'xlsx': 'libreoffice',
   'xltm': 'libreoffice',
-  'xltx': 'libreoffice'
+  'xltx': 'libreoffice',
   'xlt': 'libreoffice',
   'xlw': 'libreoffice',
   'xpm': 'gimp',
@@ -167,7 +165,6 @@ def is_literal_command(command):
         return False
         
 
-#trace_handle = open('/tmp/cjsh_trace.' + str(os.getpid()), 'w')
 trace_handle = open('/tmp/cjsh_trace.out', 'w')
 
 def log(message):
@@ -229,9 +226,6 @@ class StoppableThread(threading.Thread):
     def stopped(self):
         return self._stop_event.is_set()
 
-#thread = Thread()
-#thread.start()
-
 trace(1)
 if True:
 #try:
@@ -256,13 +250,10 @@ if True:
                     trace(7)
                     for character in lines[-1]:
                         trace(8)
-                        if starting and character == '\t':
-                            trace(9)
-                            indented += 1
                         if character != '\t':
                             trace(10)
                             starting = False
-                    if lines[-1][-1] == ':':
+                    if len(lines) > 1 and lines[-1][-1] == ':':
                         trace(11)
                         indented += 1
                 trace(12)
@@ -295,7 +286,8 @@ if True:
                             searched_line.append(entry)
                         else:
                             trace(21)
-                            if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                            if (os.path.join(os.getenv('PWD'), entry) in
+                              heirarchy):
                                 trace(22)
                                 searched_line.append(entry)
                             else:
@@ -320,7 +312,8 @@ if True:
                                                 trace(29)
                                                 searched_line.append(filename)
                                                 found_in_home_heirarchy = True
-                                if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                                if (not found_in_local_heirarchy and not
+                                  found_in_home_heirarchy):
                                     trace(30)
                                     for filename in heirarchy:
                                         trace(31)
@@ -406,7 +399,8 @@ if len(sys.argv) > 1:
                             searched_line.append(entry)
                         else:
                             trace(56)
-                            if os.path.join(os.getenv('PWD'), entry) in heirarchy:
+                            if (os.path.join(os.getenv('PWD'), entry) in
+                              heirarchy):
                                 trace(57)
                                 searched_line.append(entry)
                             else:
@@ -425,13 +419,15 @@ if len(sys.argv) > 1:
                                     trace(62)
                                     if not found_in_local_heirarchy:
                                         trace(63)
-                                        if filename.startswith(os.getenv('HOME')):
+                                        if (filename.startswith(os.getenv(
+                                          'HOME'))):
                                             trace(64)
                                             if filename.endswith('/' + entry):
                                                 trace(65)
                                                 searched_line.append(filename)
                                                 found_in_home_heirarchy = True
-                                if not found_in_local_heirarchy and not found_in_home_heirarchy:
+                                if (not found_in_local_heirarchy and not
+                                  found_in_home_heirarchy):
                                     trace(66)
                                     for filename in heirarchy:
                                         trace(67)
@@ -447,7 +443,7 @@ if len(sys.argv) > 1:
             for line in lines:
                 trace(70)
                 to_exec += line[1:] + '\n'
-            to_exec = re.sub('%\((\w+)\)\w', r'" + str(\1) + "', to_exec)
+            to_exec = re.sub(r'%\((\w+)\)\w', r'" + str(\1) + "', to_exec)
             try:
                 trace(71)
                 exec(to_exec, globals(), locals())
@@ -455,7 +451,7 @@ if len(sys.argv) > 1:
             except Exception as error:
                 trace(72)
                 print(to_exec)
-                print("There was an error: {0}".format(error))
+                print('There was an error: {0}'.format(error))
 
 
 if not ('-s' in sys.argv or '--silent' in sys.argv):
@@ -482,10 +478,7 @@ while True:
         sys.exit(0)
     line = line[:-1]
     split_line = shlex.split(line)
-    if split_line[0] in aliases:
-        old_split_line = split_line[0]
-        split_line[0] = aliases[split_line[0]]
-        line = line.replace(old_split_line, split_line[0], 1)
+    log(split_line[0])
     if line and line[0] == ' ':
         trace(75)
         line = line.replace('    ', '\t')
@@ -494,9 +487,8 @@ while True:
         print('''
 cjsh is an experimental Python-powered Linux/Unix/Mac shell by C.J.S. Hayward.
 It is designed to allow commands such as editors to find appropriate files that
-don't happen to be in your current directory, to allow tab completion for ssh
-and sftp as much as vi and emacs, and to allow a powerful Python variant for
-shell scripting.
+don't happen to be in your current directory, and to allow a powerful Python
+variant for shell scripting.
 
 As a minor feature, it imitates the most famous Python Easter egg.
 ''')
@@ -505,23 +497,14 @@ As a minor feature, it imitates the most famous Python Easter egg.
         os.system('''echo "
 The un-Zen of cjsh by C.J.S. Hayward, CJSHayward@pobox.com, CJSHayward.com:
 
+Tabs are for Python.
+
 You can mix Python with system shell commands: no indent for the latter.
 Leave a blank line after pure or mixed Python to execute.
     If you're a Pythonista, try it.
 
-cjsh will look for files:
-    First in your present directory,
-    Then in your present file heirarchy,
-    Then in your home directory heirarchy,
-    Then across the filesystem as recorded.
-
-Control-R is for command completion that reaches across far more than your
-current directory.
-
-Tabs are for Python.
-
-cjsh> [TAB]for index in range(10):
-----> echo %(index)d
+cjsh> [Tab]for index in range(10):
+----> [Tab][Tab]echo %(index)d
 ----> 
 
 Prepend a tab to a line to enter a command Python-mode.
@@ -530,17 +513,25 @@ Prepend a tab to a line to enter a command Python-mode.
 cjsh is a second take on Unix files and shells after modern searching and
 usability.
 
-(But it's only a first pass.)
+(But it's only a second pass.)
 
 **Use the Source, Luke!**
 " | less''')
-    elif split_line[0] == 'alias':
-        remainder = line[len(alias) + 1:]
-        break_point = remainder.indexOf('=')
+    elif split_line[0] in aliases:
+        trace('74B')
+        line = line.replace(split_line[0], aliases[split_line[0]], 1)
+        os.system(line)
+    elif split_line[0] and split_line[0] == 'alias':
+        remainder = line[len('alias') + 1:]
+        break_point = remainder.find('=')
         key = remainder[:break_point]
         value = remainder[break_point + 1:]
         aliases[key] = value
-    elif split_line[0] == 'cd':
+    elif '=' in line:
+        key = line[:line.find('=')]
+        value = line[line.find('=') + 1:]
+        os.setenv(key, value)
+    elif split_line[0] and split_line[0] == 'cd':
         trace(78)
         output = subprocess.getoutput(line + ' && pwd')
         if output.startswith('/'):
@@ -549,10 +540,12 @@ usability.
         else:
             trace(80)
             sys.stderr.write(output)
-    elif line.strip() in ['exit', 'logout']:
+    elif line.strip() in ['exit', 'logout', 'quit']:
         trace(81)
         print('')
         sys.exit(0)
+    elif split_line[0] == 'run':
+        os.system(line.replace('run', '', 1).strip())
     elif line and line[0] == '\t':
         trace(82)
         lines = [line]
@@ -741,20 +734,11 @@ usability.
                                         trace(140)
                                         searched_line.append(filename)
             line = searched_line
-
-            #if (isinstance(expanded_line, list)):
-                #line = ' '.join(expanded_line)
-            #else:
-                #line = expanded_line
-            #print(line)
-            #parsed_line = shlex.split(line)
             if len(line) == 1 and os.path.isdir(line[0]):
-                #log(2)
                 trace(141)
                 os.chdir(line[0])
             else:
                 trace(142)
-                #log(3)
                 if is_literal_command(line[0]):
                     os.system(' '.join(line))
                 elif (len(line) == 1 and os.path.isfile(line[0]) and
@@ -762,11 +746,9 @@ usability.
                   bool(os.stat(subprocess.getoutput('which ' + line[0])) &
                   stat.S_IXUSR)):
                     trace(143)
-                    #log(4)
                     os.system(wrap(line[0]))
                 else:
                     trace(144)
-                    #log(5)
                     previous_handler = None
                     sequence = []
                     rlog(sys.argv)
