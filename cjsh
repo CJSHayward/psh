@@ -20,7 +20,7 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
   'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
   'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
 
-DEBUG = False
+DEBUG = True
 
 EDITOR = os.getenv('EDITOR')
 
@@ -29,38 +29,115 @@ RUN = 'run'
 if not EDITOR:
     EDITOR = 'vim'
 
+aliases = {}
+
 background = {
     'gimp': True,
     EDITOR: False,
     }
 
 handlers = {
+  '123': 'libreoffice',
+  '602': 'libreoffice',
+  'bmp': 'gimp',
   'c': EDITOR,
+  'cgm': 'libreoffice',
   'conf': EDITOR,
   'cpp': EDITOR,
   'css': EDITOR,
+  'csv': EDITOR,
+  'dbf': 'libreoffice',
   'deb': 'dpkg -i',
+  'dif': 'libreoffice',
+  'doc': 'libreoffice',
+  'docm': 'libreoffice',
+  'docx': 'libreoffice',
+  'dot': 'libreoffice',
+  'dotm': 'libreoffice',
+  'dotx': 'libreoffice',
+  'dxf': 'gimp',
   'el': EDITOR,
   'elc': EDITOR,
+  'emf': 'gimp',
+  'eps': 'gimp',
   'gif': 'gimp',
   'h': EDITOR,
   'htm': EDITOR,
   'html': EDITOR,
+  'hwp': 'libreoffice',
   'jpeg': 'gimp',
   'jpg': 'gimp',
+  'jtd': 'libreoffice',
+  'jtt': 'libreoffice',
+  'met': 'gimp',
+  'pbm': 'gimp',
+  'pcd': 'gimp',
+  'pct': 'gimp',
+  'pcx': 'gimp',
+  'pdb': 'libreoffice',
   'pdf': 'google-chrome',
+  'pgm': 'gimp',
   'pl': 'google-chrome',
+  'plt': 'gimp',
+  'pot': 'libreoffice',
+  'potm': 'libreoffice',
+  'potx': 'libreoffice',
+  'ppm': 'gimp',
+  'pps': 'libreoffice',
+  'ppt': 'libreoffice',
+  'pptm': 'libreoffice',
+  'pptx': 'libreoffice',
+  'psd': 'gimp',
+  'psw': 'libreoffice',
+  'pxl': 'libreoffice',
   'py': EDITOR,
+  'ras': 'gimp',
   'rpm': 'rpm -i',
+  'rtf': 'libreoffice',
+  'sda': 'libreoffice',
+  'sdc': 'libreoffice',
+  'sdd': 'libreoffice',
+  'sdp': 'libreoffice',
+  'sdw': 'libreoffice',
+  'sgf': 'gimp',
+  'sgl': 'libreoffice',
+  'sgv': 'gimp',
+  'svm': 'gimp',
   'sh': EDITOR,
+  'slk': 'libreoffice',
   'tbz2': 'tar xvf',
   'tar.bz2': 'tar xvf',
   'tar.lzma': 'tar xzf',
   'tar.gz': 'tar xzf',
+  'tga': 'gimp',
   'tgz': 'tar xzf',
+  'tif': 'gimp',
+  'tiff': 'gimp',
   'tlz': 'tar xzf',
   'txt': EDITOR,
+  'uof': 'libreoffice',
+  'uop': 'libreoffice',
+  'uos': 'libreoffice',
+  'uot': 'libreoffice',
+  'vor': 'libreoffice',
+  'wb2': 'libreoffice',
+  'wk1': 'libreoffice',
+  'wkx': 'libreoffice',
+  'wmf': 'gimp',
+  'wpd': 'libreoffice',
+  'wps': 'libreoffice',
+  'xbm': 'gimp',
   'xcf': 'gimp',
+  'xls': 'libreoffice',
+  'xlsb': 'libreoffice',
+  'xlsm': 'libreoffice',
+  'xlsx': 'libreoffice',
+  'xltm': 'libreoffice',
+  'xltx': 'libreoffice'
+  'xlt': 'libreoffice',
+  'xlw': 'libreoffice',
+  'xpm': 'gimp',
+  'xml': EDITOR,
   'zip': 'unzip',
   }
 
@@ -83,7 +160,8 @@ def act_on(filename):
         return filename
 
 def is_literal_command(command):
-    if subprocess.getoutput('which ' + command) or command in BASH_BUILTINS:
+    word = command.split(' ')[0]
+    if subprocess.getoutput('which ' + word) or word in BASH_BUILTINS:
         return True
     else:
         return False
@@ -187,11 +265,12 @@ if True:
                     if lines[-1][-1] == ':':
                         trace(11)
                         indented += 1
-                split_line = shlex.split(line, True)
                 trace(12)
+                split_line = shlex.split(line, True)
                 if is_literal_command(line[0]):
                     trace(13)
                     command = line
+                    os.system(command)
                 else:
                     trace(14)
                     globbed_line = []
@@ -402,6 +481,11 @@ while True:
         print('')
         sys.exit(0)
     line = line[:-1]
+    split_line = shlex.split(line)
+    if split_line[0] in aliases:
+        old_split_line = split_line[0]
+        split_line[0] = aliases[split_line[0]]
+        line = line.replace(old_split_line, split_line[0], 1)
     if line and line[0] == ' ':
         trace(75)
         line = line.replace('    ', '\t')
@@ -450,7 +534,13 @@ usability.
 
 **Use the Source, Luke!**
 " | less''')
-    elif line.startswith('cd '):
+    elif split_line[0] == 'alias':
+        remainder = line[len(alias) + 1:]
+        break_point = remainder.indexOf('=')
+        key = remainder[:break_point]
+        value = remainder[break_point + 1:]
+        aliases[key] = value
+    elif split_line[0] == 'cd':
         trace(78)
         output = subprocess.getoutput(line + ' && pwd')
         if output.startswith('/'):
@@ -632,23 +722,24 @@ usability.
                                     trace(133)
                                     searched_line.append(filename)
                                     found_in_local_heirarchy = True
-                        if os.getenv('PWD') != os.getenv('HOME'):
-                            trace(134)
-                            if not found_in_local_heirarchy:
-                                trace(135)
-                                if filename.startswith(os.getenv('HOME')):
-                                    trace(136)
+                            if os.getenv('PWD') != os.getenv('HOME'):
+                                trace(134)
+                                if not found_in_local_heirarchy:
+                                    trace(135)
+                                    if filename.startswith(os.getenv('HOME')):
+                                        trace(136)
+                                        if filename.endswith('/' + entry):
+                                            trace(137)
+                                            searched_line.append(filename)
+                                            found_in_home_heirarchy = True
+                            if (not found_in_local_heirarchy and not
+                              found_in_home_heirarchy):
+                                trace(138)
+                                for filename in heirarchy:
+                                    trace(139)
                                     if filename.endswith('/' + entry):
-                                        trace(137)
+                                        trace(140)
                                         searched_line.append(filename)
-                                        found_in_home_heirarchy = True
-                        if not found_in_local_heirarchy and not found_in_home_heirarchy:
-                            trace(138)
-                            for filename in heirarchy:
-                                trace(139)
-                                if filename.endswith('/' + entry):
-                                    trace(140)
-                                    searched_line.append(filename)
             line = searched_line
 
             #if (isinstance(expanded_line, list)):
