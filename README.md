@@ -1,7 +1,7 @@
 # cjsh
 An experimental shell based on Python. Version 2.0 pre-alpha. To run it, run:
 
-$ git checkout https://github.com/CJSHayward/cjsh.git
+$ git checkout https://github.com/CJSHayward/cjsh.git  
 $ cjsh/cjsh
 
 ![A terminal session showing the shell](cjsh.png)
@@ -66,4 +66,5 @@ want. The syntax for Python is essentially the same as the shell.
 * Tab completion
 * Job control
 
-**[C.J.S. Hayward](https://cjshayward.com)** ([email](mailto:christos.jonathan.hayward@gmail.com))
+**[C.J.S. Hayward](https://cjshayward.com)**  
+([email](mailto:christos.jonathan.hayward@gmail.com), [LinkedIn - I'm looking](LinkedIn.com.in/jonathanhayward))
