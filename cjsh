@@ -235,7 +235,6 @@ if True:
           '.cjshrc')).read().split('\n')
     else:
         lines = []
-        converted_lines = lines
     print(repr(lines))
     for line in lines:
         trace('3|')
@@ -488,7 +487,9 @@ if True:
 if len(sys.argv) > 1:
     trace(38)
     lines = open(sys.argv[1]).read().split('\n')
+    index = -1
     for line in lines:
+        index += 1
         trace(39)
         if line:
             trace(40)
@@ -509,7 +510,7 @@ if len(sys.argv) > 1:
                         if character != '\t':
                             trace(46)
                             starting = False
-                    if lines[-1][-1] == ':':
+                    if line[-1] == ':':
                         trace(47)
                         indented += 1
                 split_line = shlex.split(line, True)
@@ -576,10 +577,10 @@ if len(sys.argv) > 1:
                                             trace(68)
                                             searched_line.append(filename)
                     command = ' '.join(searched_line)
-                converted_lines.append(('\t' * indented) + 'os.system("' +
+                lines[index] = (('\t' * indented) + 'os.system("' +
                   command + '")')
                 print('2')
-                eval(converted_lines.join('\n')
+                eval(lines.join('\n')
         elif lines:
             trace(69)
             to_exec = ''
@@ -719,7 +720,7 @@ usability.
                             if character != '\t':
                                 trace(92)
                                 starting = False
-                        if lines[-1][-1] == ':':
+                        if line[-1] == ':':
                             indented += 1
                             trace(93)
                     split_line = shlex.split(line, True)
