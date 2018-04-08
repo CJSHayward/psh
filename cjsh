@@ -510,7 +510,7 @@ if len(sys.argv) > 1:
                         if character != '\t':
                             trace(46)
                             starting = False
-                    if line[-1] == ':':
+                    if re.match(line, r':\s*#.*$'):
                         trace(47)
                         indented += 1
                 split_line = shlex.split(line, True)
@@ -720,7 +720,7 @@ usability.
                             if character != '\t':
                                 trace(92)
                                 starting = False
-                        if line[-1] == ':':
+                        if re.match(line, r':\s*#.*$'):
                             indented += 1
                             trace(93)
                     split_line = shlex.split(line, True)
