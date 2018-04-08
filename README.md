@@ -4,7 +4,7 @@ An experimental shell based on Python.
 It is intended to be a shell that lets users use Python for its shell
 scripting.
 
-Version 2.0 pre-alpha. To run it, run:
+Version 0.0a. To run it, run:
 
 $ git checkout https://github.com/CJSHayward/psh.git  
 $ psh/psh
