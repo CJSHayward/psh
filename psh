@@ -20,12 +20,12 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
   'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
   'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
 
-DEBUG = True
+DEBUG = False
 
 EDITOR = os.getenv('EDITOR')
 
 if not EDITOR:
-    EDITOR = 'vim'
+    EDITOR = 'nano'
 
 aliases = {}
 
@@ -165,7 +165,7 @@ def is_literal_command(command):
         return False
         
 
-trace_handle = open('/tmp/cjsh_trace.out', 'w')
+trace_handle = open('/tmp/psh_trace.out', 'w')
 
 def log(message):
     if DEBUG:
@@ -196,7 +196,7 @@ def wrap(argument):
     return "'" + argument.replace("'", "'\\''") + "'"
 
 try:
-    readline.read_history_file(os.path.join(os.getenv('HOME'), '.cjsh_history'))
+    readline.read_history_file(os.path.join(os.getenv('HOME'), '.psh_history'))
 except IOError:
     pass
 
@@ -214,11 +214,11 @@ class StoppableThread(threading.Thread):
                 directories.remove('cygdrive')
             for file in files:
                 heirarchy.append(os.path.join(root, file))
-        open(os.path.join(os.getenv('HOME'), '.cjsh_file_listing_' +
+        open(os.path.join(os.getenv('HOME'), '.psh_file_listing_' +
             str(os.getpid())), 'w').write('\n'.join(heirarchy) + '\n')
-        os.rename(os.path.join(os.getenv('HOME'), '.cjsh_file_listing_' +
+        os.rename(os.path.join(os.getenv('HOME'), '.psh_file_listing_' +
             str(os.getpid())), os.path.join(os.getenv('HOME'),
-            '.cjsh_file_listing'))
+            '.psh_file_listing'))
         if '' in heirarchy:
             heirarchy.remove('')
     def stop(self):
@@ -230,12 +230,11 @@ trace(1)
 if True:
 #try:
     trace(2)
-    if os.path.exists(os.path.join(os.getenv('HOME'), '.cjshrc')):
+    if os.path.exists(os.path.join(os.getenv('HOME'), '.pshrc')):
         lines = open(os.path.join(os.getenv('HOME'),
-          '.cjshrc')).read().split('\n')
+          '.pshrc')).read().split('\n')
     else:
         lines = []
-    print(repr(lines))
     for line in lines:
         trace('3|')
         if line:
@@ -600,7 +599,7 @@ if len(sys.argv) > 1:
 
 if not ('-s' in sys.argv or '--silent' in sys.argv):
     print(
-      "Welcome to cjsh. Please visit [1mCJSHayward.com[0m! Hit '?' for help.")
+      "Welcome to psh. Please visit [1mCJSHayward.com[0m! Hit '?' for help.")
     print('--')
 while True:
     print('')
@@ -609,7 +608,7 @@ while True:
     print(os.getcwd())
     try:
         trace(73)
-        sys.stdout.write('cjsh> ')
+        sys.stdout.write('psh> ')
         sys.stdout.flush()
         line = sys.stdin.readline()
         if not line:
@@ -628,7 +627,7 @@ while True:
     if line == '?':
         trace(76)
         print('''
-cjsh is an experimental Python-powered Linux/Unix/Mac shell by C.J.S. Hayward.
+psh is an experimental Python-powered Linux/Unix/Mac shell by C.J.S. Hayward.
 It is designed to allow commands such as editors to find appropriate files that
 don't happen to be in your current directory, and to allow a powerful Python
 variant for shell scripting.
@@ -638,7 +637,7 @@ As a minor feature, it imitates the most famous Python Easter egg.
     elif line == "import this":
         trace(77)
         os.system('''echo "
-The un-Zen of cjsh by C.J.S. Hayward, CJSHayward@pobox.com, CJSHayward.com:
+The un-Zen of psh by C.J.S. Hayward, CJSHayward@pobox.com, CJSHayward.com:
 
 Tabs are for Python.
 
@@ -646,14 +645,14 @@ You can mix Python with system shell commands: no indent for the latter.
 Leave a blank line after pure or mixed Python to execute.
     If you're a Pythonista, try it.
 
-cjsh> 	for index in range(10):
-----> 		echo %(index)d
-----> 
+psh> 	for index in range(10):
+---> 		echo %(index)d
+---> 
 
 Prepend a tab to a line to enter a command Python-mode.
     '^\\t' == '^    '
 
-cjsh is a second take on Unix files and shells after modern searching and
+psh is a second take on Unix files and shells after modern searching and
 usability.
 
 (But it's only a second pass.)
@@ -696,7 +695,7 @@ usability.
             trace(83)
             try:
                 trace(84)
-                line = input('----> ')
+                line = input('---> ')
             except EOFError:
                 trace(85)
                 print('')
@@ -802,7 +801,7 @@ usability.
                     print(to_exec)
                     print("There was an error: {0}".format(error))
                 readline.write_history_file(os.path.join(os.getenv('HOME'), 
-                    '.cjsh_history'))
+                    '.psh_history'))
 
     else:
         split_line = shlex.split(line, True)
@@ -931,4 +930,4 @@ usability.
                           in sequence]))
                 #log(15)
             readline.write_history_file(os.path.join(os.getenv('HOME'), 
-                '.cjsh_history'))
+                '.psh_history'))
