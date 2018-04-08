@@ -580,7 +580,7 @@ if len(sys.argv) > 1:
                 lines[index] = (('\t' * indented) + 'os.system("' +
                   command + '")')
                 print('2')
-                eval(lines.join('\n')
+                eval(lines.join('\n'))
         elif lines:
             trace(69)
             to_exec = ''
