@@ -71,5 +71,5 @@ want. The syntax for Python is essentially the same as the shell.
 * Tab completion
 * Job control
 
-**[C.J.S. Hayward](https://cjshayward.com)**  
-([email](mailto:christos.jonathan.hayward@gmail.com), [LinkedIn - I'm looking for work in UX!](LinkedIn.com.in/jonathanhayward))
+**[C.J.S. Hayward](https://CJSHayward.com)**
+[Amazon](http://amazon.com/author/cjshayward), [Email](mailto:christos.jonathan.hayward@gmail.com), [Flagship Site](https://cjshayward.com)LinkedIn - I'm looking for work in UX!](LinkedIn.com.in/jonathanhayward)
