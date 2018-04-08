@@ -167,6 +167,13 @@ def is_literal_command(command):
 
 trace_handle = open('/tmp/psh_trace.out', 'w')
 
+def error(message):
+    if type(message) == type(''):
+        sys.stderr.write(message + '\n')
+    else:
+        sys.stderr.write(repr(message) + '\n')
+    sys.stderr.flush()
+
 def log(message):
     if DEBUG:
         if type(message) == type(''):
@@ -268,7 +275,11 @@ if True:
                         trace('121|')
                         if os.path.exists(line):
                             if os.path.isdir(line):
-                                os.chdir(line)
+                                try:
+                                    os.chdir(line)
+                                except FileNotFoundError:
+                                    error(
+                                      'That is not a directory you can enter.')
                             else:
                                 os.system(line)
                         else:
@@ -337,7 +348,11 @@ if True:
                                                     searched_line.append(filename)
                         if len(line) == 1 and os.path.isdir(line[0]):
                             trace('142|')
-                            os.chdir(line[0])
+                            try:
+                                os.chdir(line)
+                            except FileNotFoundError:
+                                error(
+                                  'That is not a directory you can enter.')
                         else:
                             trace('143|')
                             if is_literal_command(line[0]):
@@ -679,7 +694,10 @@ usability.
         output = subprocess.getoutput(line + ' && pwd')
         if output.startswith('/'):
             trace(79)
-            os.chdir(output)
+            try:
+                os.chdir(output)
+            except FileNotFoundError:
+                error('That is not a directory you can enter.')
         else:
             trace(80)
             sys.stderr.write(output)
@@ -814,7 +832,10 @@ usability.
             trace(120)
             if os.path.exists(line):
                 if os.path.isdir(line):
-                    os.chdir(line)
+                    try:
+                        os.chdir(line)
+                    except FileNotFoundError:
+                        error('That is not a directory you can enter.')
                 else:
                     os.system(act_on(line))
             else:
@@ -878,7 +899,10 @@ usability.
                                         searched_line.append(filename)
             if len(line) == 1 and os.path.isdir(line[0]):
                 trace(141)
-                os.chdir(line[0])
+                try:
+                    os.chdir(line)
+                except FileNotFoundError:
+                    error('That is not a directory you can enter.')
             else:
                 trace(142)
                 log(split_line)
