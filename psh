@@ -20,7 +20,7 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
   'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
   'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
 
-DEBUG = True
+DEBUG = False
 
 EDITOR = os.getenv('EDITOR')
 
