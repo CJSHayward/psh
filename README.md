@@ -1,14 +1,19 @@
-# cjsh
-An experimental shell based on Python. Version 2.0 pre-alpha. To run it, run:
+# psh
+An experimental shell based on Python.
 
-$ git checkout https://github.com/CJSHayward/cjsh.git  
-$ cjsh/cjsh
+It is intended to be a shell that lets users use Python for its shell
+scripting.
 
-![A terminal session showing the shell](cjsh.png)
+Version 2.0 pre-alpha. To run it, run:
+
+$ git checkout https://github.com/CJSHayward/psh.git  
+$ psh/psh
+
+![A terminal session showing the shell](psh.png)
 
 ## Batteries included
 
-cjsh comes with full Python power. Indent by one or more tabs (four spaces are
+psh comes with full Python power. Indent by one or more tabs (four spaces are
 considered a tab), and you are no longer issuing individual shell commands;
 you're programming in Python.
 
@@ -17,7 +22,7 @@ variable interpolation*.
 
 A blank line terminates the Python or mixed block.
 
-Please note that programming your ~/.cjshrc file can be very useful.
+Please note that programming your ~/.pshrc file can be very useful.
 
 ## Only say one thing!
 
@@ -55,9 +60,9 @@ Python variables can be assigned using Python's syntax after an indent:
 	foo=bar
 ```
 
-## .cjshrc file setup
+## .pshrc file setup
 
-.cjshrc files are fading in in power. The power explicitly includes the ability
+.pshrc files are growing in power. The power explicitly includes the ability
 to set aliases and environmental variables, and program Python to do things you
 want. The syntax for Python is essentially the same as the shell.
 
@@ -67,4 +72,4 @@ want. The syntax for Python is essentially the same as the shell.
 * Job control
 
 **[C.J.S. Hayward](https://cjshayward.com)**  
-([email](mailto:christos.jonathan.hayward@gmail.com), [LinkedIn - I'm looking](LinkedIn.com.in/jonathanhayward))
+([email](mailto:christos.jonathan.hayward@gmail.com), [LinkedIn - I'm looking for work in UX!](LinkedIn.com.in/jonathanhayward))
