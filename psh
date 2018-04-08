@@ -20,7 +20,7 @@ BASH_BUILTINS = ['alias', 'bind', 'builtin', 'caller', 'command', 'declare',
   'echo', 'enable', 'help', 'let', 'local', 'logout', 'mapfile', 'printf',
   'read', 'readarray', 'source', 'type', 'typeset', 'ulimit', 'unalias']
 
-DEBUG = False
+DEBUG = True
 
 EDITOR = os.getenv('EDITOR')
 
@@ -355,43 +355,44 @@ if True:
                                 rlog(sys.argv)
                                 for argument in line:
                                     trace('146|')
-                                    #log(6)
+                                    trace(6)
                                     for extension in handlers:
-                                        #log(7)
+                                        trace(7)
                                         trace('147|')
                                         if argument.lower().endswith('.' +
                                           extension):
-                                            #log(8)
+                                            trace(8)
                                             trace('148|')
                                             handler = handlers[extension]
                                             if background[handler]:
                                                 trace('149|')
-                                                #log(9)
+                                                trace(9)
                                                 os.system(handler + ' ' +
-                                                  wrap(argument) + ' &')
+                                                  wrap(argument) +
+                                                  ' 2> /dev/null &')
                                             else:
                                                 trace('150|')
-                                                #log(10)
+                                                trace(10)
                                                 if handler == previous_handler:
                                                     trace('151|')
-                                                    #log(11)
+                                                    trace(11)
                                                     sequence.append(argument)
                                                 else:
                                                     trace('152|')
-                                                    #log(12)
+                                                    trace(12)
                                                     os.system(previous_handler
                                                       + ' ' + ' '.join([wrap(x)
                                                       for x in sequence]))
                                                     previous_hander = handler
                                                     sequence = [argument]
-                                #log(13)
+                                trace(13)
                                 if sequence:
                                     trace('153|')
-                                    #log(14)
+                                    trace(14)
                                     os.system(previous_handler + ' ' +
                                       ' '.join([wrap(x) for x
                                       in sequence]))
-                            #log(15)
+                            trace(15)
                 trace(12)
                 split_line = shlex.split(line, True)
                 if is_literal_command(line[0]):
@@ -880,14 +881,16 @@ usability.
                 os.chdir(line[0])
             else:
                 trace(142)
-                if is_literal_command(line[0]):
-                    os.system(' '.join(line))
-                elif (len(line) == 1 and os.path.isfile(line[0]) and
-                  subprocess.getoutput('which ' + line[0]) and
-                  bool(os.stat(subprocess.getoutput('which ' + line[0])) &
+                log(split_line)
+                if is_literal_command(split_line[0]):
+                    trace('142B')
+                    os.system(' '.join(split_line))
+                elif (len(split_line) == 1 and os.path.isfile(split_line[0])
+                  and subprocess.getoutput('which ' + split_line[0]) and
+                  bool(os.stat(subprocess.getoutput('which ' + split_line[0])) &
                   stat.S_IXUSR)):
                     trace(143)
-                    os.system(wrap(line[0]))
+                    os.system(wrap(split_line[0]))
                 else:
                     trace(144)
                     previous_handler = None
@@ -895,39 +898,39 @@ usability.
                     rlog(sys.argv)
                     for argument in line:
                         trace(145)
-                        #log(6)
+                        trace(6)
                         for extension in handlers:
-                            #log(7)
+                            trace(7)
                             trace(146)
                             if argument.lower().endswith('.' + extension):
-                                #log(8)
+                                trace(8)
                                 trace(147)
                                 handler = handlers[extension]
                                 if background[handler]:
                                     trace(148)
-                                    #log(9)
+                                    trace(9)
                                     os.system(handler + ' ' + wrap(argument) +
-                                      ' &')
+                                      ' 2> /dev/null &')
                                 else:
                                     trace(149)
-                                    #log(10)
+                                    trace(10)
                                     if handler == previous_handler:
                                         trace(150)
-                                        #log(11)
+                                        trace(11)
                                         sequence.append(argument)
                                     else:
                                         trace(151)
-                                        #log(12)
+                                        trace(12)
                                         os.system(previous_handler + ' ' + 
                                           ' '.join([wrap(x) for x in sequence]))
                                         previous_hander = handler
                                         sequence = [argument]
-                    #log(13)
+                    trace(13)
                     if sequence:
                         trace(152)
-                        #log(14)
+                        trace(14)
                         os.system(previous_handler + ' ' + ' '.join([wrap(x) for x
                           in sequence]))
-                #log(15)
+                trace(15)
             readline.write_history_file(os.path.join(os.getenv('HOME'), 
                 '.psh_history'))
